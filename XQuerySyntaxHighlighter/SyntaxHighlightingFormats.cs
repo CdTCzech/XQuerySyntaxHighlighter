@@ -20,6 +20,20 @@ namespace XQuerySyntaxHighlighter
 	}
 
 	[Export(typeof(EditorFormatDefinition))]
+	[ClassificationType(ClassificationTypeNames = "xq_default_function")]
+	[Name("xq_default_function")]
+	[UserVisible(true)]
+	[Order(Before = Priority.Default)]
+	internal sealed class DefaultFunctionFormat : ClassificationFormatDefinition
+	{
+		public DefaultFunctionFormat()
+		{
+			DisplayName = "xq_default_function";
+			ForegroundColor = Color.FromRgb(191, 210, 249);
+		}
+	}
+
+	[Export(typeof(EditorFormatDefinition))]
 	[ClassificationType(ClassificationTypeNames = "xq_keyword")]
 	[Name("xq_keyword")]
 	[UserVisible(true)]
@@ -58,6 +72,34 @@ namespace XQuerySyntaxHighlighter
 		{
 			DisplayName = "xq_number";
 			ForegroundColor = Color.FromRgb(184, 215, 163);
+		}
+	}
+
+	[Export(typeof(EditorFormatDefinition))]
+	[ClassificationType(ClassificationTypeNames = "xq_string")]
+	[Name("xq_string")]
+	[UserVisible(true)]
+	[Order(Before = Priority.Default)]
+	internal sealed class StringFormat : ClassificationFormatDefinition
+	{
+		public StringFormat()
+		{
+			DisplayName = "xq_string";
+			ForegroundColor = Color.FromRgb(214, 157, 133);
+		}
+	}
+
+	[Export(typeof(EditorFormatDefinition))]
+	[ClassificationType(ClassificationTypeNames = "xq_variable")]
+	[Name("xq_variable")]
+	[UserVisible(true)]
+	[Order(Before = Priority.Default)]
+	internal sealed class VariableFormat : ClassificationFormatDefinition
+	{
+		public VariableFormat()
+		{
+			DisplayName = "xq_variable";
+			ForegroundColor = Color.FromRgb(255, 219, 163);
 		}
 	}
 }

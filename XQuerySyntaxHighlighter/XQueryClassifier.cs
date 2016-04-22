@@ -15,6 +15,10 @@ namespace XQuerySyntaxHighlighter
 		internal static ClassificationTypeDefinition xq_comment = null;
 
 		[Export(typeof(ClassificationTypeDefinition))]
+		[Name("xq_default_function")]
+		internal static ClassificationTypeDefinition xq_default_function = null;
+
+		[Export(typeof(ClassificationTypeDefinition))]
 		[Name("xq_keyword")]
 		internal static ClassificationTypeDefinition xq_keyword = null;
 
@@ -25,6 +29,14 @@ namespace XQuerySyntaxHighlighter
 		[Export(typeof(ClassificationTypeDefinition))]
 		[Name("xq_number")]
 		internal static ClassificationTypeDefinition xq_number = null;
+
+		[Export(typeof(ClassificationTypeDefinition))]
+		[Name("xq_string")]
+		internal static ClassificationTypeDefinition xq_string = null;
+
+		[Export(typeof(ClassificationTypeDefinition))]
+		[Name("xq_variable")]
+		internal static ClassificationTypeDefinition xq_variable = null;
 	}
 
 	[Export(typeof(ITaggerProvider))]
@@ -71,9 +83,12 @@ namespace XQuerySyntaxHighlighter
 			Aggregator = asmTagAggregator;
 			XQueryTypes = new Dictionary<TokenType, IClassificationType>();
 			XQueryTypes[TokenType.xq_comment] = typeService.GetClassificationType("xq_comment");
+			XQueryTypes[TokenType.xq_default_function] = typeService.GetClassificationType("xq_default_function");
 			XQueryTypes[TokenType.xq_keyword] = typeService.GetClassificationType("xq_keyword");
 			XQueryTypes[TokenType.xq_namespace] = typeService.GetClassificationType("xq_namespace");
 			XQueryTypes[TokenType.xq_number] = typeService.GetClassificationType("xq_number");
+			XQueryTypes[TokenType.xq_string] = typeService.GetClassificationType("xq_string");
+			XQueryTypes[TokenType.xq_variable] = typeService.GetClassificationType("xq_variable");
 		}
 
 		public event EventHandler<SnapshotSpanEventArgs> TagsChanged
