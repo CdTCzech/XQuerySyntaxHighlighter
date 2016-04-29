@@ -102,4 +102,18 @@ namespace XQuerySyntaxHighlighter
 			ForegroundColor = Color.FromRgb(255, 219, 163);
 		}
 	}
+
+	[Export(typeof(EditorFormatDefinition))]
+	[ClassificationType(ClassificationTypeNames = "xq_unknown")]
+	[Name("xq_unknown")]
+	[UserVisible(true)]
+	[Order(Before = Priority.Default)]
+	internal sealed class UnknownFormat : ClassificationFormatDefinition
+	{
+		public UnknownFormat()
+		{
+			DisplayName = "xq_unknown";
+			ForegroundColor = Color.FromRgb(220, 220, 220);
+		}
+	}
 }

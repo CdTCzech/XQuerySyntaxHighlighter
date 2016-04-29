@@ -37,6 +37,10 @@ namespace XQuerySyntaxHighlighter
 		[Export(typeof(ClassificationTypeDefinition))]
 		[Name("xq_variable")]
 		internal static ClassificationTypeDefinition xq_variable = null;
+
+		[Export(typeof(ClassificationTypeDefinition))]
+		[Name("xq_unknown")]
+		internal static ClassificationTypeDefinition xq_unknown = null;
 	}
 
 	[Export(typeof(ITaggerProvider))]
@@ -89,6 +93,7 @@ namespace XQuerySyntaxHighlighter
 			XQueryTypes[TokenType.xq_number] = typeService.GetClassificationType("xq_number");
 			XQueryTypes[TokenType.xq_string] = typeService.GetClassificationType("xq_string");
 			XQueryTypes[TokenType.xq_variable] = typeService.GetClassificationType("xq_variable");
+			XQueryTypes[TokenType.xq_unknown] = typeService.GetClassificationType("xq_unknown");
 		}
 
 		public event EventHandler<SnapshotSpanEventArgs> TagsChanged

@@ -12,7 +12,6 @@ namespace XQuerySyntaxHighlighter
 	{
 		public ITagger<T> CreateTagger<T>(ITextBuffer buffer) where T : ITag
 		{
-			//Debug.WriteLine("INFO: AsmTokenTagProvider:CreateTagger: entering");
 			return new XQueryTokenTagger(buffer) as ITagger<T>;
 		}
 	}

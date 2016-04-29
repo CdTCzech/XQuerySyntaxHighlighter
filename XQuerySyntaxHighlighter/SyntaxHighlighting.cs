@@ -19,7 +19,7 @@ namespace XQuerySyntaxHighlighter
 	{
 		private ITextBuffer Buffer;
 
-		private HashSet<string> DefinedKeywords = new HashSet<string>()
+		private static readonly HashSet<string> DefinedKeywords = new HashSet<string>()
 		{
 			"and", "as", "ascending", "at", "attribute",
 			"base-uri", "boundary-space", "by",
@@ -54,97 +54,90 @@ namespace XQuerySyntaxHighlighter
 			remove { }
 		}
 
-		// TODO: multiline comments/strings, XQuery in string, regiony, upozorneni na vic jak 16380 znaku, folding
+		// TODO: XQuery in string, regiony, upozorneni na vic jak 16380 znaku, folding
 		public IEnumerable<ITagSpan<XQueryTokenTag>> GetTags(NormalizedSnapshotSpanCollection spans)
 		{
-			foreach (SnapshotSpan curSpan in spans)
+			SnapshotSpan curSpan = spans[0];
+			string text = curSpan.Snapshot.TextBuffer.CurrentSnapshot.GetText();
+			int startPos = 0;
+
+			for (int i = 0; i < text.Length; ++i)
 			{
-				ITextSnapshotLine containingLine = curSpan.Start.GetContainingLine();
-				string line = containingLine.GetText();
-				int offset = containingLine.Start.Position;
-				int startPos = 0;
+				TokenType tokenType = TokenType.xq_unknown;
+				startPos = i;
 
-				for (int i = 0; i < line.Length; ++i)
+				if (char.IsLetter(text[i]) || text[i] == '_') // keyword || namespace
 				{
-					TokenType tokenType = TokenType.xq_unknown;
+					while (++i < text.Length && (char.IsLetterOrDigit(text[i]) || text[i] == '-')) { }
 
-					if (char.IsLetter(line[i]) || line[i] == '_') // keyword || namespace
+					string temp = text.Substring(startPos, i - startPos);
+					if (i + 1 < text.Length && text[i] == ':' && (char.IsLetter(text[i + 1]) || text[i + 1] == '_')) // namespace
 					{
-						startPos = i;
-						while (++i < line.Length && (char.IsLetterOrDigit(line[i]) || line[i] == '-')) { }
+						var tokenSpanNamespace = new SnapshotSpan(curSpan.Snapshot, new Span(startPos, i - startPos));
+						yield return new TagSpan<XQueryTokenTag>(tokenSpanNamespace, new XQueryTokenTag(TokenType.xq_namespace));
+						startPos = ++i;
+						while (++i < text.Length && (char.IsLetterOrDigit(text[i]) || text[i] == '-')) { }
 
-						string temp = line.Substring(startPos, i - startPos);
-						if (i + 1 < line.Length && line[i] == ':' && (char.IsLetter(line[i + 1]) || line[i + 1] == '_')) // namespace
-						{
-							var tokenSpan = new SnapshotSpan(curSpan.Snapshot, new Span(startPos + offset, i - startPos));
-							yield return new TagSpan<XQueryTokenTag>(tokenSpan, new XQueryTokenTag(TokenType.xq_namespace));
-							startPos = ++i;
-							while (++i < line.Length && (char.IsLetterOrDigit(line[i]) || line[i] == '-')) { }
-
-							if (temp == "xs" || temp == "fn")
-							{
-								tokenType = TokenType.xq_default_function;
-								// tokenType = (temp == "xs") ? TokenType.xq_keyword : TokenType.xq_default_function;
-							}
-							else
-							{
-								tokenType = TokenType.xq_unknown;
-							}
-						}
-						else if (DefinedKeywords.Contains(temp.ToLower())) // keyword
-						{
-							tokenType = TokenType.xq_keyword;
-						}
-						else if (i + 1 < line.Length && line[i] == '(')
+						if (temp == "xs" || temp == "fn")
 						{
 							tokenType = TokenType.xq_default_function;
+							// tokenType = (temp == "xs") ? TokenType.xq_keyword : TokenType.xq_default_function;
 						}
-					}
-					else if (char.IsDigit(line[i])) // number
-					{
-						startPos = i;
-						while (++i < line.Length && char.IsDigit(line[i])) { } // integer
-						if (i < line.Length && line[i] == '.') // floating
+						else
 						{
-							while (++i < line.Length && char.IsDigit(line[i])) { }
-						}
-						tokenType = TokenType.xq_number;
-					}
-					else if (line[i] == '(') // comment
-					{
-						if (i + 1 < line.Length && line[i + 1] == ':')
-						{
-							startPos = i;
-							ITextSnapshot textSnapshot = curSpan.Snapshot.TextBuffer.CurrentSnapshot;
-							while (true)
-							{
-								while (++i < textSnapshot.Length && textSnapshot[i] != ')') { }
-								if (textSnapshot[i - 1] == ':') break;
-							}
-							tokenType = TokenType.xq_comment;
+							tokenType = TokenType.xq_unknown;
 						}
 					}
-					else if (line[i] == '$') // variable
+					else if (DefinedKeywords.Contains(temp.ToLower())) // keyword
 					{
-						startPos = i;
-						while (++i < line.Length && (char.IsLetterOrDigit(line[i]) || line[i] == '-')) { }
-						tokenType = TokenType.xq_variable;
+						tokenType = TokenType.xq_keyword;
 					}
-					else if (line[i] == '\"' || line[i] == '\'') // text
+					else if (i + 1 < text.Length && text[i] == '(')
 					{
-						startPos = i;
-						char tempChar = line[i];
-						while (++i < line.Length && line[i] != tempChar) { }
-						++i;
-						tokenType = TokenType.xq_string;
-					}
-
-					if (tokenType != TokenType.xq_unknown)
-					{
-						var tokenSpan = new SnapshotSpan(curSpan.Snapshot, new Span(startPos + offset, i - startPos));
-						yield return new TagSpan<XQueryTokenTag>(tokenSpan, new XQueryTokenTag(tokenType));
+						tokenType = TokenType.xq_default_function;
 					}
 				}
+				else if (char.IsDigit(text[i])) // number
+				{
+					while (++i < text.Length && char.IsDigit(text[i])) { } // integer
+					if (i < text.Length && text[i] == '.') // floating
+					{
+						while (++i < text.Length && char.IsDigit(text[i])) { }
+					}
+					tokenType = TokenType.xq_number;
+				}
+				else if (text[i] == '(' && i + 1 < text.Length && text[i + 1] == ':') // comment
+				{
+					while (true)
+					{
+						while (++i < text.Length && text[i] != ')') { }
+						if (i == text.Length || text[i - 1] == ':') break;
+					}
+					if (i + 1 <= text.Length) ++i;
+					tokenType = TokenType.xq_comment;
+				}
+				else if (text[i] == '$') // variable
+				{
+					while (++i < text.Length && (char.IsLetterOrDigit(text[i]) || text[i] == '-')) { }
+					tokenType = TokenType.xq_variable;
+				}
+				else if (text[i] == '\"' || text[i] == '\'') // text
+				{
+					char tempChar = text[i];
+					while (++i < text.Length && text[i] != tempChar) { }
+					if (i + 1 <= text.Length) ++i;
+					tokenType = TokenType.xq_string;
+				}
+
+				/*
+				using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"C:\Users\hrncir\Documents\Visual Studio 2015\Projects\Out.txt", true))
+				{
+					file.WriteLine("Start: " + startPos + "End: " + Math.Max(1, i - startPos) + "Type: " + tokenType.ToString());
+				}
+				*/
+
+				var tokenSpan = new SnapshotSpan(curSpan.Snapshot, new Span(startPos, Math.Max(1, i - startPos)));
+				yield return new TagSpan<XQueryTokenTag>(tokenSpan, new XQueryTokenTag(tokenType));
 			}
 		}
 	}
