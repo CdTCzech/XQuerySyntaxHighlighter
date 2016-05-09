@@ -7,7 +7,7 @@ using Microsoft.VisualStudio.Utilities;
 namespace XQuerySyntaxHighlighter
 {
 	[Export(typeof(IViewTaggerProvider))]
-	[ContentType("text")]
+	[ContentType(XQSH.ContentType)]
 	[TagType(typeof(TextMarkerTag))]
 	internal class BraceMatchingTaggerProvider : IViewTaggerProvider
 	{

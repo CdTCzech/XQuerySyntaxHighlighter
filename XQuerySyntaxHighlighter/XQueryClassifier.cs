@@ -80,8 +80,8 @@ namespace XQuerySyntaxHighlighter
 		IDictionary<TokenType, IClassificationType> XQueryTypes;
 
 		internal XQueryClassifier(ITextBuffer buffer,
-							   ITagAggregator<XQueryTokenTag> asmTagAggregator,
-							   IClassificationTypeRegistryService typeService)
+								ITagAggregator<XQueryTokenTag> asmTagAggregator,
+								IClassificationTypeRegistryService typeService)
 		{
 			Buffer = buffer;
 			Aggregator = asmTagAggregator;

@@ -171,7 +171,8 @@ namespace XQuerySyntaxHighlighter
 				WordSpans = newSpans;
 				CurrentWord = newCurrentWord;
 
-				TagsChanged?.Invoke(this, new SnapshotSpanEventArgs(new SnapshotSpan(SourceBuffer.CurrentSnapshot, 0, SourceBuffer.CurrentSnapshot.Length)));
+				if (TagsChanged != null)
+					TagsChanged.Invoke(this, new SnapshotSpanEventArgs(new SnapshotSpan(SourceBuffer.CurrentSnapshot, 0, SourceBuffer.CurrentSnapshot.Length)));
 			}
 		}
 

@@ -54,14 +54,15 @@ namespace XQuerySyntaxHighlighter
 			remove { }
 		}
 
-		// TODO: XQuery in string, regiony, upozorneni na vic jak 16380 znaku, folding
+		// TODO: upozorneni na vic jak 16380 znaku, folding
 		public IEnumerable<ITagSpan<XQueryTokenTag>> GetTags(NormalizedSnapshotSpanCollection spans)
 		{
 			SnapshotSpan curSpan = spans[0];
 			string text = curSpan.Snapshot.TextBuffer.CurrentSnapshot.GetText();
 			int startPos = 0;
+			bool inString = false;
 
-			for (int i = 0; i < text.Length; ++i)
+			for (int i = 0; i < text.Length;)
 			{
 				TokenType tokenType = TokenType.xq_unknown;
 				startPos = i;
@@ -121,12 +122,39 @@ namespace XQuerySyntaxHighlighter
 					while (++i < text.Length && (char.IsLetterOrDigit(text[i]) || text[i] == '-')) { }
 					tokenType = TokenType.xq_variable;
 				}
-				else if (text[i] == '\"' || text[i] == '\'') // text
+				else if (text[i] == '\"') // string
 				{
-					char tempChar = text[i];
-					while (++i < text.Length && text[i] != tempChar) { }
+					while (++i < text.Length && char.IsWhiteSpace(text[i])) { }
+					if (i < text.Length && text[i] == '{')
+					{
+						inString = true;
+					}
+					else if (i < text.Length && text[i] != '\"')
+					{
+						while (++i < text.Length && text[i] != '\"') { }
+					}
 					if (i + 1 <= text.Length) ++i;
 					tokenType = TokenType.xq_string;
+				}
+				else if (inString && text[i] == '}')
+				{
+					while (++i < text.Length && char.IsWhiteSpace(text[i])) { }
+					if (i < text.Length && text[i] == '\"')
+					{
+						inString = false;
+						if (i + 1 <= text.Length) ++i;
+						tokenType = TokenType.xq_string;
+					}
+				}
+				else if (text[i] == '\'') // char
+				{
+					while (++i < text.Length && text[i] != '\'') { }
+					if (i + 1 <= text.Length) ++i;
+					tokenType = TokenType.xq_string;
+				}
+				else
+				{
+					++i;
 				}
 
 				/*
@@ -136,7 +164,7 @@ namespace XQuerySyntaxHighlighter
 				}
 				*/
 
-				var tokenSpan = new SnapshotSpan(curSpan.Snapshot, new Span(startPos, Math.Max(1, i - startPos)));
+				var tokenSpan = new SnapshotSpan(curSpan.Snapshot, new Span(startPos, i - startPos));
 				yield return new TagSpan<XQueryTokenTag>(tokenSpan, new XQueryTokenTag(tokenType));
 			}
 		}

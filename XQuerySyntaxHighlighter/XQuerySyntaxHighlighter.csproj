@@ -46,6 +46,8 @@
   <ItemGroup>
     <Compile Include="BraceMatching.cs" />
     <Compile Include="BraceMatchingProvider.cs" />
+    <Compile Include="Outlining.cs" />
+    <Compile Include="OutliningProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SyntaxHighlighting.cs" />
     <Compile Include="SyntaxHighlightingFormats.cs" />
