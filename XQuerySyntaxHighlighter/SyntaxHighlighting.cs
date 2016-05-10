@@ -62,22 +62,27 @@ namespace XQuerySyntaxHighlighter
 			int startPos = 0;
 			bool inString = false;
 
-			for (int i = 0; i < text.Length;)
+			int i = 0;
+			int end = text.Length;
+			if (text.Length >= 3 && text.Substring(0, 3) == "R\"(") i = 3;
+			if (text.Length >= 2 && text.Substring(text.Length - 2, 2) == ")\"") end = text.Length - 2;
+
+			while (i < end)
 			{
 				TokenType tokenType = TokenType.xq_unknown;
 				startPos = i;
 
 				if (char.IsLetter(text[i]) || text[i] == '_') // keyword || namespace
 				{
-					while (++i < text.Length && (char.IsLetterOrDigit(text[i]) || text[i] == '-')) { }
+					while (++i < end && (char.IsLetterOrDigit(text[i]) || text[i] == '-')) { }
 
 					string temp = text.Substring(startPos, i - startPos);
-					if (i + 1 < text.Length && text[i] == ':' && (char.IsLetter(text[i + 1]) || text[i + 1] == '_')) // namespace
+					if (i + 1 < end && text[i] == ':' && (char.IsLetter(text[i + 1]) || text[i + 1] == '_')) // namespace
 					{
 						var tokenSpanNamespace = new SnapshotSpan(curSpan.Snapshot, new Span(startPos, i - startPos));
 						yield return new TagSpan<XQueryTokenTag>(tokenSpanNamespace, new XQueryTokenTag(TokenType.xq_namespace));
 						startPos = ++i;
-						while (++i < text.Length && (char.IsLetterOrDigit(text[i]) || text[i] == '-')) { }
+						while (++i < end && (char.IsLetterOrDigit(text[i]) || text[i] == '-')) { }
 
 						if (temp == "xs" || temp == "fn")
 						{
@@ -93,63 +98,63 @@ namespace XQuerySyntaxHighlighter
 					{
 						tokenType = TokenType.xq_keyword;
 					}
-					else if (i + 1 < text.Length && text[i] == '(')
+					else if (i + 1 < end && text[i] == '(')
 					{
 						tokenType = TokenType.xq_default_function;
 					}
 				}
 				else if (char.IsDigit(text[i])) // number
 				{
-					while (++i < text.Length && char.IsDigit(text[i])) { } // integer
-					if (i < text.Length && text[i] == '.') // floating
+					while (++i < end && char.IsDigit(text[i])) { } // integer
+					if (i < end && text[i] == '.') // floating
 					{
-						while (++i < text.Length && char.IsDigit(text[i])) { }
+						while (++i < end && char.IsDigit(text[i])) { }
 					}
 					tokenType = TokenType.xq_number;
 				}
-				else if (text[i] == '(' && i + 1 < text.Length && text[i + 1] == ':') // comment
+				else if (text[i] == '(' && i + 1 < end && text[i + 1] == ':') // comment
 				{
 					while (true)
 					{
-						while (++i < text.Length && text[i] != ')') { }
-						if (i == text.Length || text[i - 1] == ':') break;
+						while (++i < end && text[i] != ')') { }
+						if (i == end || text[i - 1] == ':') break;
 					}
-					if (i + 1 <= text.Length) ++i;
+					if (i + 1 <= end) ++i;
 					tokenType = TokenType.xq_comment;
 				}
 				else if (text[i] == '$') // variable
 				{
-					while (++i < text.Length && (char.IsLetterOrDigit(text[i]) || text[i] == '-')) { }
+					while (++i < end && (char.IsLetterOrDigit(text[i]) || text[i] == '-')) { }
 					tokenType = TokenType.xq_variable;
 				}
 				else if (text[i] == '\"') // string
 				{
-					while (++i < text.Length && char.IsWhiteSpace(text[i])) { }
-					if (i < text.Length && text[i] == '{')
+					while (++i < end && char.IsWhiteSpace(text[i])) { }
+					if (i < end && text[i] == '{')
 					{
 						inString = true;
 					}
-					else if (i < text.Length && text[i] != '\"')
+					else if (i < end && text[i] != '\"')
 					{
-						while (++i < text.Length && text[i] != '\"') { }
+						while (++i < end && text[i] != '\"') { }
 					}
-					if (i + 1 <= text.Length) ++i;
+					if (i + 1 <= end) ++i;
 					tokenType = TokenType.xq_string;
 				}
 				else if (inString && text[i] == '}')
 				{
-					while (++i < text.Length && char.IsWhiteSpace(text[i])) { }
-					if (i < text.Length && text[i] == '\"')
+					while (++i < end && char.IsWhiteSpace(text[i])) { }
+					if (i < end && text[i] == '\"')
 					{
 						inString = false;
-						if (i + 1 <= text.Length) ++i;
+						if (i + 1 <= end) ++i;
 						tokenType = TokenType.xq_string;
 					}
 				}
 				else if (text[i] == '\'') // char
 				{
-					while (++i < text.Length && text[i] != '\'') { }
-					if (i + 1 <= text.Length) ++i;
+					while (++i < end && text[i] != '\'') { }
+					if (i + 1 <= end) ++i;
 					tokenType = TokenType.xq_string;
 				}
 				else

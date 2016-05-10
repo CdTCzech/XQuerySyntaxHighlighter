@@ -21,8 +21,19 @@ namespace XQuerySyntaxHighlighter
 			public int EndLine { get; set; }
 		}
 
-		string startHide = "(:<:)";     //the characters that start the outlining region
-		string endHide = "(:>:)";       //the characters that end the outlining region
+		public class TupleList<T1, T2> : List<Tuple<T1, T2>>
+		{
+			public void Add( T1 item, T2 item2 )
+			{
+				Add( new Tuple<T1, T2>( item, item2 ) );
+			}
+		}
+
+		TupleList<string, string> hides = new TupleList<string, string>
+		{
+			{ "(:<:)", "(:>:)" },
+			{ "declare function", "};" }
+		};
 		string ellipsis = "...";    //the characters that are displayed when the region is collapsed
 		string hoverText = "hidden XQuery"; //the contents of the tooltip for the collapsed span
 		ITextBuffer buffer;
@@ -85,72 +96,75 @@ namespace XQuerySyntaxHighlighter
 			// references to any parent partial regions.
 			PartialRegion currentRegion = null;
 
-			foreach (var line in newSnapshot.Lines)
+			foreach (var tuple in hides)
 			{
-				int regionStart = -1;
-				string text = line.GetText();
-
-				//lines that contain a "[" denote the start of a new region.
-				if ((regionStart = text.IndexOf(startHide, StringComparison.Ordinal)) != -1)
+				foreach (var line in newSnapshot.Lines)
 				{
-					int currentLevel = (currentRegion != null) ? currentRegion.Level : 1;
-					int newLevel;
-					if (!TryGetLevel(text, regionStart, out newLevel))
-						newLevel = currentLevel + 1;
+					int regionStart = -1;
+					string text = line.GetText();
 
-					//levels are the same and we have an existing region;
-					//end the current region and start the next
-					if (currentLevel == newLevel && currentRegion != null)
+					//lines that contain a "[" denote the start of a new region.
+					if ((regionStart = text.IndexOf(tuple.Item1, StringComparison.Ordinal)) != -1)
 					{
-						newRegions.Add(new Region()
-						{
-							Level = currentRegion.Level,
-							StartLine = currentRegion.StartLine,
-							StartOffset = currentRegion.StartOffset,
-							EndLine = line.LineNumber
-						});
+						int currentLevel = (currentRegion != null) ? currentRegion.Level : 1;
+						int newLevel;
+						if (!TryGetLevel(text, regionStart, out newLevel))
+							newLevel = currentLevel + 1;
 
-						currentRegion = new PartialRegion()
+						//levels are the same and we have an existing region;
+						//end the current region and start the next
+						if (currentLevel == newLevel && currentRegion != null)
 						{
-							Level = newLevel,
-							StartLine = line.LineNumber,
-							StartOffset = regionStart,
-							PartialParent = currentRegion.PartialParent
-						};
+							newRegions.Add(new Region()
+							{
+								Level = currentRegion.Level,
+								StartLine = currentRegion.StartLine,
+								StartOffset = currentRegion.StartOffset,
+								EndLine = line.LineNumber
+							});
+
+							currentRegion = new PartialRegion()
+							{
+								Level = newLevel,
+								StartLine = line.LineNumber,
+								StartOffset = regionStart,
+								PartialParent = currentRegion.PartialParent
+							};
+						}
+						//this is a new (sub)region
+						else
+						{
+							currentRegion = new PartialRegion()
+							{
+								Level = newLevel,
+								StartLine = line.LineNumber,
+								StartOffset = regionStart,
+								PartialParent = currentRegion
+							};
+						}
 					}
-					//this is a new (sub)region
-					else
+					//lines that contain "]" denote the end of a region
+					else if ((regionStart = text.IndexOf(tuple.Item2, StringComparison.Ordinal)) != -1)
 					{
-						currentRegion = new PartialRegion()
-						{
-							Level = newLevel,
-							StartLine = line.LineNumber,
-							StartOffset = regionStart,
-							PartialParent = currentRegion
-						};
-					}
-				}
-				//lines that contain "]" denote the end of a region
-				else if ((regionStart = text.IndexOf(endHide, StringComparison.Ordinal)) != -1)
-				{
-					int currentLevel = (currentRegion != null) ? currentRegion.Level : 1;
-					int closingLevel;
-					if (!TryGetLevel(text, regionStart, out closingLevel))
-						closingLevel = currentLevel;
+						int currentLevel = (currentRegion != null) ? currentRegion.Level : 1;
+						int closingLevel;
+						if (!TryGetLevel(text, regionStart, out closingLevel))
+							closingLevel = currentLevel;
 
-					//the regions match
-					if (currentRegion != null &&
-						currentLevel == closingLevel)
-					{
-						newRegions.Add(new Region()
+						//the regions match
+						if (currentRegion != null &&
+							currentLevel == closingLevel)
 						{
-							Level = currentLevel,
-							StartLine = currentRegion.StartLine,
-							StartOffset = currentRegion.StartOffset,
-							EndLine = line.LineNumber
-						});
+							newRegions.Add(new Region()
+							{
+								Level = currentLevel,
+								StartLine = currentRegion.StartLine,
+								StartOffset = currentRegion.StartOffset,
+								EndLine = line.LineNumber
+							});
 
-						currentRegion = currentRegion.PartialParent;
+							currentRegion = currentRegion.PartialParent;
+						}
 					}
 				}
 			}

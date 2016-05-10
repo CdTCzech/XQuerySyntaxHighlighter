@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Id="XQuerySyntaxHighlighter.Compelson.b039107a-7705-4623-87e8-909d3d75269d" Version="1.0" Language="en-US" Publisher="Compelson" />
+    <Identity Id="XQuerySyntaxHighlighter.Compelson.a7c0e850-6a88-4f45-8737-a71efd118280" Version="2.0" Language="en-US" Publisher="Compelson" />
     <DisplayName>XQuerySyntaxHighlighter</DisplayName>
     <Description>Empty VSIX Project.</Description>
   </Metadata>
