@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Id="XQuerySyntaxHighlighter.Compelson.a7c0e850-6a88-4f45-8737-a71efd118280" Version="2.0" Language="en-US" Publisher="Compelson" />
+    <Identity Id="XQuerySyntaxHighlighter@Compelson" Version="2.1" Language="en-US" Publisher="Compelson" />
     <DisplayName>XQuerySyntaxHighlighter</DisplayName>
-    <Description>Empty VSIX Project.</Description>
+    <Description xml:space="preserve">XQuery syntax highligting, brace matching a word higlighting extension for VS 2013 and 2015 by Compelson for personal use.</Description>
   </Metadata>
   <Installation>
     <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[14.0]" />

@@ -23,7 +23,7 @@ namespace XQuerySyntaxHighlighter
 	{
 		public BraceMatchingFormat()
 		{
-			BackgroundColor = Color.FromRgb(173, 216, 230);
+			BackgroundColor = Color.FromRgb(14, 69, 131);
 			DisplayName = "Highlight Matched Braces";
 			ZOrder = 5;
 		}
